@@ -16,7 +16,7 @@ public class UrlController {
 
     @Autowired
     private UrlService service;
-
+    //create short url
     @PostMapping
     public UrlResponse createShortUrl(@RequestBody UrlRequest request) {
 
