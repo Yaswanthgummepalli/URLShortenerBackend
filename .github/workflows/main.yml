@@ -28,7 +28,16 @@ jobs:
             echo "Stopping old Spring Boot application..."
             pkill -f 'java -jar target/url_shortener-0.0.1-SNAPSHOT.jar' || true
 
-            sleep 3
+            sleep 3echo "Stopping old Spring Boot application..."
+            PID=$(pgrep -f 'java -jar target/url_shortener-0.0.1-SNAPSHOT.jar' || true)
+            
+            if [ -n "$PID" ]; then
+              echo "Stopping Spring Boot process: $PID"
+              kill "$PID" || true
+              sleep 5
+            else
+              echo "No old Spring Boot process found."
+            fi
 
             echo "Starting new Spring Boot application..."
             nohup java -jar target/url_shortener-0.0.1-SNAPSHOT.jar > backend.log 2>&1 &
