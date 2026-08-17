@@ -25,23 +25,17 @@ jobs:
             echo "Building Spring Boot application..."
             mvn clean package -DskipTests
 
-            echo "Stopping old Spring Boot application..."
-            PID=$(pgrep -f '[j]ava -jar target/url_shortener-0.0.1-SNAPSHOT.jar' || true)
-            
-            if [ -n "$PID" ]; then
-              echo "Stopping Spring Boot process: $PID"
-              kill "$PID" || true
-              sleep 5
-            else
-              echo "No old Spring Boot process found."
-            fi
+            echo "Restarting Spring Boot application..."
+            sudo systemctl restart urlshortener
 
-            echo "Loading application environment..."
-            set -a
-            source /etc/urlshortener.env
-            set +a
-            
-            echo "Starting new Spring Boot application..."
-            nohup java -jar target/url_shortener-0.0.1-SNAPSHOT.jar > backend.log 2>&1 &
+            sleep 10
+
+            if sudo systemctl is-active --quiet urlshortener; then
+              echo "Backend is running successfully!"
+            else
+              echo "Backend failed to start!"
+              sudo systemctl status urlshortener --no-pager
+              exit 1
+            fi
 
             echo "Backend deployment completed!"
