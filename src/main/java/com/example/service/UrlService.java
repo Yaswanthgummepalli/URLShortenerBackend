@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import jakarta.servlet.http.HttpServletRequest;
 import com.example.dto.UrlRequest;
 import com.example.dto.UrlResponse;
 import com.example.bean.UrlMapping;
@@ -17,32 +17,44 @@ public class UrlService {
 
     @Autowired
     private UrlRepository repository;
-    public UrlResponse createShortUrl(UrlRequest request) {
-    	String originalUrl=request.getOriginalUrl().trim();
 
-    	Optional<UrlMapping> existingUrl=repository.findByOriginalUrl(originalUrl);
-    	if(existingUrl.isPresent())
-    	{
-    		return new UrlResponse("http://localhost:8080/api/urls/"+existingUrl.get().getShortCode());
-    	}
+@Autowired
+private HttpServletRequest request;
+	private String getBaseUrl() {
+	    return request.getScheme() + "://"
+	            + request.getServerName()
+	            + (request.getServerPort() == 80 || request.getServerPort() == 443
+	                ? ""
+	                : ":" + request.getServerPort());
+	}
+
+
+  public UrlResponse createShortUrl(UrlRequest request) {
+        String originalUrl=request.getOriginalUrl().trim();
+
+        Optional<UrlMapping> existingUrl=repository.findByOriginalUrl(originalUrl);
+        if(existingUrl.isPresent())
+        {
+                return new UrlResponse(getBaseUrl()+"/api/urls/"+existingUrl.get().getShortCode());
+        }
         String shortCode = UUID.randomUUID()
                                .toString()
                                .substring(0, 6);
 
-       
+
         UrlMapping url = new UrlMapping();
 
-        url.setOriginalUrl(request.getOriginalUrl());
+        url.setOriginalUrl(originalUrl);
 
         url.setShortCode(shortCode);
 
         url.setCreatedAt(LocalDateTime.now());
 
-        
+
         repository.save(url);
 
-        
-        return new UrlResponse("http://localhost:8080/api/urls/" + shortCode);
+
+        return new UrlResponse(getBaseUrl()+"/api/urls/" + shortCode);
 
     }
     public String getOriginalUrl(String shortCode) {

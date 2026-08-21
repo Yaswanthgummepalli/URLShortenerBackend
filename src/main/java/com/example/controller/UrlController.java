@@ -16,7 +16,7 @@ public class UrlController {
 
     @Autowired
     private UrlService service;
-    //create short url
+   
     @PostMapping
     public UrlResponse createShortUrl(@RequestBody UrlRequest request) {
 
@@ -32,6 +32,14 @@ public class UrlController {
                 .status(HttpStatus.FOUND)
                 .location(URI.create(originalUrl))
                 .build();
+    }
+    @GetMapping("/{shortCode}/original")
+    public ResponseEntity<String> getOriginalUrl(
+            @PathVariable String shortCode) {
+
+        String originalUrl = service.getOriginalUrl(shortCode);
+
+        return ResponseEntity.ok(originalUrl);
     }
 
 }
